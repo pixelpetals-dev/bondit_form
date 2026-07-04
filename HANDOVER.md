@@ -2,6 +2,10 @@
 
 _Last updated: 2026-07-04_
 
+- **Repo:** https://github.com/pixelpetals-dev/bondit_form (branch `main`)
+- **Live demo:** https://bonditdemo.everythingpla.net (Dokploy on VPS `72.61.233.43`)
+- **Status:** interactive prototype — 3 UX concepts, complete field coverage, deployed.
+
 ## What this is
 
 A mobile/tablet-first web form that approved roofing contractors complete on a
@@ -94,15 +98,26 @@ and validate it identically.
 entered **once and shared**. **Roof-specific fields** (measurements, condition,
 metal/coating, drainage, testing) **duplicate per roof**, each with its own
 scorecard; the scorecard panel shows a per-roof + aggregate summary. Groups are
-badged **"Shared · all roofs"** or **"Roof X only"** when 2+ roofs exist.
+badged **"Shared · all roofs"** or **"Roof X only"** when 2+ roofs exist. A
+floating roof control (`RoofFab.tsx`) lets you add/switch roofs after the top bar
+scrolls away — it appears **only on roof-specific content** and hides on shared
+groups (warranty, job details, sign-off), driven by `roofscope.tsx` (each concept
+computes "is the current view roof-relevant": wizard = current step's group,
+scroll = the group in view via IntersectionObserver, dashboard = a roof-relevant
+section is open).
 
-## What's implemented (matches the brief's field list)
+## What's implemented (matches the brief's full field list)
 
-3-section form · full conditional logic (metal/coating/parapet/leaks/ponding/etc.)
-· live calcs · multi-roof · adhesion testing (ASTM D4541, min-test count guide,
-auto pass/fail, 3 photos/test) · self-checking media checklist with jump-back ·
-e-signatures · auto today's date · warranty & product pre-form · WCAG 2.1 AA
-(labels + icon/text, focus rings, 44px+ targets) · mobile single-column.
+3-section form · **complete field coverage** audited against the Agency Brief
+(incl. all leak/ponding/substrate/crack descriptions, equipment detail fields,
+drip lines, flashings, gutter/scupper damage, full metal-panel detail, moisture
+core-marking, etc.) · full conditional logic (metal/coating/parapet/leaks/ponding/
+grease/skylights/…) · live calcs (gallons, parapet SF, SMACNA gutter, /50 score) ·
+multi-roof · adhesion testing (ASTM D4541, min-test count guide incl. +1/substrate,
+auto pass/fail, **3 photos per test**) · self-checking media checklist with
+**clickable jump-back** · e-signatures (**signed once**, shared) · auto today's
+date + "Set to today/now" · warranty & product pre-form · **Bond It favicon**
+(`src/app/icon.png`, the swoosh mark) · WCAG 2.1 AA · mobile single-column.
 
 ## Out of scope this phase (later work)
 
@@ -126,8 +141,24 @@ Node server (PM2/Docker) with an API + database.
 
 ## Deploy
 
-Static export → any web server. Dokploy-ready via the repo `Dockerfile`
-(multi-stage node build → nginx). Full steps in **`DEPLOY.md`**.
+- **Static export** (`output: "export"` → `out/`), served by nginx. No runtime Node.
+- **Live on Dokploy** from GitHub `main`, Build Type **Dockerfile** (multi-stage
+  node build → nginx, port **80**), domain `bonditdemo.everythingpla.net` with
+  Traefik auto-HTTPS. Enable auto-deploy so each push to `main` redeploys.
+- **CI:** `.github/workflows/ci.yml` runs lint + typecheck + build on every push/PR.
+- Verified: `docker build` + container run serve all routes (root redirect,
+  deep-links) with correct trailing-slash routing.
+- Full runbook (Dokploy + manual nginx + Node fallback) in **`DEPLOY.md`**.
+
+### Redeploy loop
+```bash
+git add -A && git commit -m "…" && git push origin main   # → Dokploy auto-builds
+```
+
+### Commands
+```bash
+npm ci · npm run dev · npm run build · npm run lint · npx tsc --noEmit
+```
 
 ## Source documents (not in repo)
 
