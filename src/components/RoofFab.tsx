@@ -4,11 +4,16 @@
 // visible after the top roof bar scrolls away, so multi-roof stays discoverable.
 
 import { useStore } from "@/lib/store";
+import { useRoofRelevant } from "./roofscope";
 import { Plus, Building } from "./icons";
 
 export function RoofFab() {
   const { roofs, activeRoof, addRoof, setActiveRoof } = useStore();
+  const relevant = useRoofRelevant();
   const multi = roofs.length > 1;
+
+  // Hide on shared/common content (warranty, job details, sign-off).
+  if (!relevant) return null;
 
   return (
     <div className="fixed bottom-20 left-3 z-40 flex items-center gap-1.5 rounded-full border border-line bg-paper/95 py-1.5 pl-1.5 pr-1.5 shadow-lg backdrop-blur">

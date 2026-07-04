@@ -7,10 +7,11 @@
 import { useEffect, useState } from "react";
 import { SCHEMA } from "@/lib/schema";
 import { useStore } from "@/lib/store";
-import { visibleGroups, sectionProgress, overallProgress } from "@/lib/engine";
+import { visibleGroups, sectionProgress, overallProgress, isSharedGroup } from "@/lib/engine";
 import { GroupBody } from "@/components/GroupBlock";
 import { RoofBar, SectionHead, GroupScopeBadge } from "@/components/chrome";
 import { RoofFab } from "@/components/RoofFab";
+import { RoofScopeProvider } from "@/components/roofscope";
 import { SubmittedPanel } from "@/components/SubmittedPanel";
 import { JumpProvider, flashField } from "@/components/jump";
 import { Check } from "@/components/icons";
@@ -18,6 +19,7 @@ import { Check } from "@/components/icons";
 export default function ScrollPage() {
   const { answers, hydrated } = useStore();
   const [active, setActive] = useState(SCHEMA[0].id);
+  const [roofRelevant, setRoofRelevant] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const overall = overallProgress(answers);
 
@@ -36,10 +38,24 @@ export default function ScrollPage() {
     return () => obs.disconnect();
   }, [hydrated]);
 
+  // Track whether the group currently in view is roof-specific, to toggle the FAB.
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        const vis = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (vis[0]) setRoofRelevant(vis[0].target.getAttribute("data-group-scope") === "roof");
+      },
+      { rootMargin: "-35% 0px -55% 0px" },
+    );
+    document.querySelectorAll("[data-group-scope]").forEach((el) => obs.observe(el));
+    return () => obs.disconnect();
+  }, [hydrated, answers]);
+
   if (submitted) return <main className="flex-1"><SubmittedPanel onBack={() => setSubmitted(false)} /></main>;
 
   return (
     <JumpProvider jump={(id) => flashField(id)}>
+    <RoofScopeProvider relevant={roofRelevant}>
     <RoofFab />
     <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-28 pt-4">
       <RoofBar />
@@ -96,7 +112,7 @@ export default function ScrollPage() {
               <SectionHead index={s.index} title={s.title} blurb={s.blurb} />
               <div className="mt-5 space-y-5">
                 {visibleGroups(s, answers).map((g) => (
-                  <div key={g.id} className="rounded-xl border border-line bg-paper p-5 shadow-sm">
+                  <div key={g.id} data-group-scope={isSharedGroup(g) ? "shared" : "roof"} className="rounded-xl border border-line bg-paper p-5 shadow-sm">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="font-display text-lg font-bold text-ink">{g.title}</h3>
                       <GroupScopeBadge group={g} />
@@ -132,6 +148,7 @@ export default function ScrollPage() {
         </div>
       </div>
     </main>
+    </RoofScopeProvider>
     </JumpProvider>
   );
 }

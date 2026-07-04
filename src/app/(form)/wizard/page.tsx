@@ -6,10 +6,11 @@
 import { useMemo, useState } from "react";
 import { SCHEMA } from "@/lib/schema";
 import { useStore } from "@/lib/store";
-import { visibleGroups, groupProgress } from "@/lib/engine";
+import { visibleGroups, groupProgress, isSharedGroup } from "@/lib/engine";
 import { GroupBody } from "@/components/GroupBlock";
 import { RoofBar, GroupScopeBadge } from "@/components/chrome";
 import { RoofFab } from "@/components/RoofFab";
+import { RoofScopeProvider } from "@/components/roofscope";
 import { ReadinessMeter } from "@/components/ReadinessMeter";
 import { JumpProvider, flashField } from "@/components/jump";
 import { ChevronLeft, ChevronRight, Check, Warn } from "@/components/icons";
@@ -96,6 +97,7 @@ export default function WizardPage() {
 
   return (
     <JumpProvider jump={jump}>
+    <RoofScopeProvider relevant={!isSharedGroup(current.group)}>
     <RoofFab />
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pb-28 pt-4">
       <RoofBar />
@@ -170,6 +172,7 @@ export default function WizardPage() {
         </div>
       </div>
     </main>
+    </RoofScopeProvider>
     </JumpProvider>
   );
 }

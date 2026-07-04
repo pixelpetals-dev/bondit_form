@@ -7,10 +7,11 @@
 import { useState } from "react";
 import { SCHEMA } from "@/lib/schema";
 import { useStore } from "@/lib/store";
-import { visibleGroups, sectionProgress, groupProgress, overallProgress, locateField } from "@/lib/engine";
+import { visibleGroups, sectionProgress, groupProgress, overallProgress, locateField, isSharedGroup } from "@/lib/engine";
 import { GroupBody } from "@/components/GroupBlock";
 import { RoofBar, AccordionChevron, GroupScopeBadge } from "@/components/chrome";
 import { RoofFab } from "@/components/RoofFab";
+import { RoofScopeProvider } from "@/components/roofscope";
 import { ReadinessMeter } from "@/components/ReadinessMeter";
 import { SubmittedPanel } from "@/components/SubmittedPanel";
 import { JumpProvider, flashField } from "@/components/jump";
@@ -46,8 +47,14 @@ export default function DashboardPage() {
 
   if (submitted) return <main className="flex-1"><SubmittedPanel onBack={() => setSubmitted(false)} /></main>;
 
+  // Show the roof FAB only while a section with roof-specific groups is open.
+  const roofRelevant = SCHEMA.some(
+    (s) => open[s.id] && visibleGroups(s, answers).some((g) => !isSharedGroup(g)),
+  );
+
   return (
     <JumpProvider jump={jump}>
+    <RoofScopeProvider relevant={roofRelevant}>
     <RoofFab />
     <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-10 pt-4">
       <RoofBar />
@@ -145,6 +152,7 @@ export default function DashboardPage() {
         </aside>
       </div>
     </main>
+    </RoofScopeProvider>
     </JumpProvider>
   );
 }
