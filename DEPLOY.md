@@ -6,6 +6,26 @@ HTML and the form logic, calculations, scoring, and auto-save all run in the
 browser (`localStorage`). That makes it trivial and cheap to host: just serve
 the `out/` folder from any web server.
 
+## Deploying with Dokploy (recommended — Git → build → live)
+
+The repo ships a `Dockerfile` (multi-stage: builds the static export, serves it
+with nginx). Dokploy builds it straight from GitHub.
+
+1. In Dokploy → **Create → Application**.
+2. **Provider:** GitHub → repository `pixelpetals-dev/bondit_form`, branch `main`.
+3. **Build Type:** `Dockerfile` (Dokploy auto-detects the `Dockerfile` at the repo root).
+4. **Port:** `80` (the nginx container listens on 80).
+5. **Domain:** add your domain/subdomain under the app's Domains tab — Dokploy's
+   Traefik handles the reverse proxy and issues the HTTPS certificate automatically.
+6. **Deploy.** Every push to `main` can auto-redeploy (enable the webhook/auto-deploy
+   toggle in Dokploy).
+
+No env vars, database, or volumes are needed for this phase.
+
+---
+
+## Manual alternative (plain nginx, no Docker)
+
 > When the later phases land (PDF generation, email, admin portal), this switches
 > to a Node deployment — see "Later: switching to a Node server" at the bottom.
 

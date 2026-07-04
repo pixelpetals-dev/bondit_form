@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+.git
+.gitignore
+npm-debug.log*
+.devlog.txt
+.servelog.txt
+docs
+DEPLOY.md
+HANDOVER.md
+README.md
+.vscode
+.idea
