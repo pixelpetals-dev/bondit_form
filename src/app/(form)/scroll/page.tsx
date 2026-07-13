@@ -5,7 +5,7 @@
 // per-section progress, and a persistent save bar. Reads like the official
 // warranty record it becomes.
 
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { SCHEMA } from "@/lib/schema";
 import { useStore } from "@/lib/store";
 import { visibleGroups, sectionProgress, overallProgress, isSharedGroup } from "@/lib/engine";
@@ -17,11 +17,82 @@ import { SubmittedPanel } from "@/components/SubmittedPanel";
 import { JumpProvider, flashField } from "@/components/jump";
 import { Check } from "@/components/icons";
 
+// --- Per-section save (UI only — needs backend wiring) ----------------------
+// TODO(backend): the client wants saves tied to the contractor's login/session
+// so an inspection started onsite can be resumed out of order, hours later, or
+// on another device (client rep 1307). Until auth + an API exist, "Save" only
+// records a timestamp in localStorage beside the auto-saved answers — i.e. it
+// persists per device, not per account. Replace `saveSection` with a real API
+// call once the backend lands.
+const SECTION_SAVES_KEY = "bondit:sectionSaves";
+
+type Saves = Record<string, string>;
+type SavesAction = { type: "hydrate"; saves: Saves } | { type: "save"; sectionId: string; at: string };
+
+function savesReducer(state: Saves, action: SavesAction): Saves {
+  return action.type === "hydrate" ? action.saves : { ...state, [action.sectionId]: action.at };
+}
+
+function useSectionSaves() {
+  const [saves, dispatch] = useReducer(savesReducer, {});
+  // hydrate from localStorage after mount to avoid SSR mismatch (same as store.tsx)
+  const [hydrated, setHydrated] = useReducer(() => true, false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(SECTION_SAVES_KEY);
+      if (raw) dispatch({ type: "hydrate", saves: JSON.parse(raw) as Saves });
+    } catch {
+      /* corrupt storage — start clean */
+    }
+    setHydrated();
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(SECTION_SAVES_KEY, JSON.stringify(saves));
+    } catch {
+      /* quota / private mode — ignore */
+    }
+  }, [saves, hydrated]);
+
+  const saveSection = (sectionId: string) =>
+    dispatch({ type: "save", sectionId, at: new Date().toISOString() });
+  return { saves, saveSection };
+}
+
+function SectionSaveRow({ savedAt, onSave }: { savedAt?: string; onSave: () => void }) {
+  const time = savedAt
+    ? new Date(savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : null;
+  return (
+    <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
+      {time ? (
+        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-ready">
+          <Check className="h-3.5 w-3.5" /> Saved <span className="readout">{time}</span>
+        </span>
+      ) : null}
+      <button
+        type="button"
+        onClick={onSave}
+        className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-bond px-4 text-sm font-semibold text-bond-deep transition-colors hover:bg-bond/[0.06]"
+      >
+        {time ? "Save again" : "Save section"}
+      </button>
+      <span className="w-full text-right text-[11px] text-ink-faint">
+        Saved to this device · syncs to your account once contractor sign-in is live
+      </span>
+    </div>
+  );
+}
+
 export default function ScrollPage() {
   const { answers, hydrated } = useStore();
   const [active, setActive] = useState(SCHEMA[0].id);
   const [roofRelevant, setRoofRelevant] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const { saves, saveSection } = useSectionSaves();
   const overall = overallProgress(answers);
 
   useEffect(() => {
@@ -124,6 +195,7 @@ export default function ScrollPage() {
                     </div>
                   </div>
                 ))}
+                <SectionSaveRow savedAt={saves[s.id]} onSave={() => saveSection(s.id)} />
               </div>
             </section>
           ))}

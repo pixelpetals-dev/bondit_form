@@ -118,6 +118,13 @@ date + "Set to today/now" · warranty & product pre-form · **Bond It favicon**
 
 ## Out of scope this phase (later work)
 
+- **Per-section "Save" is a UI stub — needs backend wiring.** The buttons at the
+  end of each section only record a timestamp in `localStorage` (per device),
+  not the client-requested behaviour: saves tied to the **contractor's
+  login/session**, resumable across devices/hours (see `../client rep 1307.md`).
+  Requires auth + an API — grep for `TODO(backend)` in
+  `src/app/(form)/scroll/page.tsx`. Client has been told it goes live with the
+  backend phase.
 - **Offline / PWA** — explicitly dropped by the client.
 - **PDF generation, email delivery, admin portal, real upload storage/DB, PIN
   access.** Uploads preview in-session only. Answers are per-device
