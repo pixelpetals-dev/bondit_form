@@ -3,7 +3,7 @@
 // Presentational field controls — value in, onChange out. No store coupling,
 // so the same controls render identically everywhere.
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { FieldDef, CalcOutput } from "@/lib/types";
 import { Check, X, Minus, Plus, Warn, Clock } from "./icons";
 
@@ -224,6 +224,100 @@ export function MultiSelectControl({
           </button>
         );
       })}
+    </div>
+  );
+}
+
+/**
+ * Multi-select rendered as a dropdown — scales to long option lists (product
+ * catalogue). Stays open while picking; closes on outside click or Escape.
+ */
+export function MultiSelectDropdownControl({
+  field,
+  value,
+  onChange,
+}: {
+  field: FieldDef;
+  value: unknown;
+  onChange: (v: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const wrap = useRef<HTMLDivElement>(null);
+  const selected = Array.isArray(value) ? (value as string[]) : [];
+  const toggle = (o: string) =>
+    onChange(selected.includes(o) ? selected.filter((s) => s !== o) : [...selected, o]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (wrap.current && !wrap.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div className="relative" ref={wrap}>
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+        className={`${inputBase} flex h-12 items-center justify-between gap-2 pr-3 text-left`}
+      >
+        <span className={`truncate ${selected.length ? "text-ink" : "text-ink-faint"}`}>
+          {selected.length ? selected.join(", ") : "Select…"}
+        </span>
+        <span className="flex shrink-0 items-center gap-1.5">
+          {selected.length ? (
+            <span className="readout rounded-full bg-bond/10 px-2 py-0.5 text-[11px] font-bold text-bond-deep">
+              {selected.length}
+            </span>
+          ) : null}
+          <svg aria-hidden viewBox="0 0 24 24" className={`h-4 w-4 text-ink-faint transition-transform ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+        </span>
+      </button>
+      {open ? (
+        <ul
+          role="listbox"
+          aria-multiselectable
+          className="absolute z-30 mt-1.5 max-h-64 w-full overflow-y-auto rounded-lg border border-line bg-paper p-1 shadow-lg"
+        >
+          {field.options?.map((o) => {
+            const on = selected.includes(o);
+            return (
+              <li key={o}>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={on}
+                  onClick={() => toggle(o)}
+                  className={`flex min-h-11 w-full items-center gap-2.5 rounded-md px-3 text-left text-sm transition-colors ${
+                    on ? "bg-bond/[0.07] font-semibold text-ink" : "text-ink-soft hover:bg-mist"
+                  }`}
+                >
+                  <span
+                    className={`flex shrink-0 items-center justify-center rounded border ${
+                      on ? "border-bond bg-bond text-white" : "border-line-strong bg-paper"
+                    }`}
+                    style={{ width: 18, height: 18 }}
+                  >
+                    {on ? <Check className="h-3 w-3" /> : null}
+                  </span>
+                  {o}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
     </div>
   );
 }

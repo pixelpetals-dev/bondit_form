@@ -58,6 +58,8 @@ export interface FieldDef {
   captureRequired?: boolean;
   /** For type "signature": field id whose value is the signee's name. */
   sourceId?: string;
+  /** For type "multiselect": render as a dropdown (scales to long option lists). */
+  dropdown?: boolean;
 }
 
 export interface GroupDef {

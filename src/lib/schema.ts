@@ -54,7 +54,7 @@ export const SCHEMA: SectionDef[] = [
         title: "Warranty & product",
         note: "Links this inspection to the Bond It product and warranty it supports.",
         fields: [
-          { id: "productName", label: "Product(s) used", type: "multiselect", options: PRODUCTS, required: true, shared: true, span: 2, help: "Select every product used on this job." },
+          { id: "productName", label: "Product(s) used", type: "multiselect", dropdown: true, options: PRODUCTS, required: true, shared: true, span: 2, help: "Select every product used on this job." },
           { id: "batchNumber", label: "Batch / lot numbers", type: "textlist", required: true, shared: true, span: 2, placeholder: "As printed on the packaging", help: "Add one per pail / roll — jobs often use several." },
           { id: "warrantyTier", label: "Warranty term", type: "matchtext", options: WARRANTY_TIER, required: true, shared: true, span: 2, placeholder: "e.g. 10-year", help: "Type the term offered to the customer." },
         ],

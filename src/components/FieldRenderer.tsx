@@ -13,6 +13,7 @@ import {
   NumberControl,
   SelectControl,
   MultiSelectControl,
+  MultiSelectDropdownControl,
   TextListControl,
   MatchTextControl,
   ToggleControl,
@@ -61,7 +62,11 @@ export function FieldRenderer({ field }: { field: FieldDef }) {
     case "multiselect":
       return (
         <FieldShell field={field}>
-          <MultiSelectControl field={field} value={value} onChange={onChange} />
+          {field.dropdown ? (
+            <MultiSelectDropdownControl field={field} value={value} onChange={onChange} />
+          ) : (
+            <MultiSelectControl field={field} value={value} onChange={onChange} />
+          )}
         </FieldShell>
       );
     case "textlist":
