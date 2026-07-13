@@ -80,9 +80,6 @@ function SectionSaveRow({ savedAt, onSave }: { savedAt?: string; onSave: () => v
       >
         {time ? "Save again" : "Save section"}
       </button>
-      <span className="w-full text-right text-[11px] text-ink-faint">
-        Saved to this device · syncs to your account once contractor sign-in is live
-      </span>
     </div>
   );
 }
