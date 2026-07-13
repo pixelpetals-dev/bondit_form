@@ -1,8 +1,9 @@
 "use client";
 
-// Concept B — Document Scroll. The whole inspection as one readable document
-// with a sticky section rail, jump links, live per-section progress, and a
-// persistent save bar. Reads like the official warranty record it becomes.
+// Document Scroll — the concept the client locked in. The whole inspection as
+// one readable document with a sticky section rail, jump links, live
+// per-section progress, and a persistent save bar. Reads like the official
+// warranty record it becomes.
 
 import { useEffect, useState } from "react";
 import { SCHEMA } from "@/lib/schema";

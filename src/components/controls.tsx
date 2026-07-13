@@ -1,7 +1,7 @@
 "use client";
 
 // Presentational field controls — value in, onChange out. No store coupling,
-// so the same controls render identically in every concept.
+// so the same controls render identically everywhere.
 
 import { useEffect, useId, useState } from "react";
 import type { FieldDef, CalcOutput } from "@/lib/types";

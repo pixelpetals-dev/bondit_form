@@ -1,7 +1,6 @@
 // The full form definition — 3 streamlined sections, every field, group, and
-// conditional rule. This is the single source of truth; all three concepts
-// render from it. Auto-calculated values use `compute`; conditional fields use
-// `showIf`.
+// conditional rule. This is the single source of truth the UI renders from.
+// Auto-calculated values use `compute`; conditional fields use `showIf`.
 
 import type { SectionDef } from "./types";
 import {

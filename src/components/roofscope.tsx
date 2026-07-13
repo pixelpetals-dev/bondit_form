@@ -1,6 +1,6 @@
 "use client";
 
-// Lets each concept tell the floating roof control whether the content the user
+// Lets the page tell the floating roof control whether the content the user
 // is currently on is roof-specific (show the FAB) or shared/common (hide it).
 
 import { createContext, useContext, type ReactNode } from "react";

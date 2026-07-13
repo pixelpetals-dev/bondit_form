@@ -1,10 +1,12 @@
 # Bond It — Pre-Coating Inspection · Handover
 
-_Last updated: 2026-07-04_
+_Last updated: 2026-07-13_
 
 - **Repo:** https://github.com/pixelpetals-dev/bondit_form (branch `main`)
 - **Live demo:** https://bonditdemo.everythingpla.net (Dokploy on VPS `72.61.233.43`)
-- **Status:** interactive prototype — 3 UX concepts, complete field coverage, deployed.
+- **Status:** interactive prototype — client locked **Concept 2 (Document Scroll)**
+  on 2026-07-13; Concepts 1 & 3 removed (recoverable from git history, commit
+  `b015d38` and earlier). Complete field coverage, deployed.
 
 ## What this is
 
@@ -14,10 +16,12 @@ completed form is both the warranty record and a brand piece. It replaces a
 12-section Word document (`Form_1_Pre-Coating_Inspection`), regrouped — per the
 client brief — into **3 sections**.
 
-**Current phase:** an interactive, clickable **design prototype** presenting
-**three UX concepts** over one shared form engine, for Bond It to pick a
-direction before the production build. This is the "prototype to approve before
-build" deliverable from the brief.
+**Current phase:** the prototype originally presented **three UX concepts** over
+one shared form engine. Bond It picked **Concept 2 — Document Scroll** (client
+feedback 2026-07-13, see `../client rep 1307.md`), so the repo now carries only
+that concept. Next up: fold in the client's refinement list (section-based
+progress ticker, per-section save, applicator details, etc. — see that same
+feedback file).
 
 ## Tech stack
 
@@ -36,32 +40,26 @@ build" deliverable from the brief.
 
 ```bash
 npm ci
-npm run dev        # http://localhost:3000  (redirects to /wizard)
+npm run dev        # http://localhost:3000  (redirects to /scroll)
 npm run build      # static export → ./out
 npm run lint       # eslint (clean)
 npx tsc --noEmit   # typecheck (clean)
 ```
 
-Routes: `/` → redirects to `/wizard`. Concepts: `/wizard` (1), `/scroll` (2),
-`/dashboard` (3). A switcher in the header flips between them; answers carry
-across all three (shared store).
+Routes: `/` → redirects to `/scroll`, the one remaining concept.
 
-## The three concepts
+## The concept — Document Scroll (`/scroll`)
 
-All share the exact same fields, logic, and calculations — only the *flow/chrome*
-differs. All grounded in a clean-corporate brand ("Field Instrument" design:
-white surfaces, Bond It blue `#1E9BD7`, mono readouts, a readiness gauge).
-
-| Route | Concept | Flow |
-|-------|---------|------|
-| `/wizard` | 1 · Guided Wizard | one group per screen, Next/Back, required-field gating |
-| `/scroll` | 2 · Document Scroll | long record + sticky section rail + jump links |
-| `/dashboard` | 3 · Section Dashboard | collapsible cards, completion ticks, sticky live score |
+The whole inspection as one readable document: long record + sticky section
+rail + jump links + live per-section progress. Grounded in a clean-corporate
+brand ("Field Instrument" design: white surfaces, Bond It blue `#1E9BD7`, mono
+readouts, a readiness gauge). The removed concepts (`/wizard` Guided Wizard,
+`/dashboard` Section Dashboard) live in git history if ever needed.
 
 ## Architecture — the shared engine (`src/lib/`)
 
-Everything is **schema-driven**: define a field once, all three concepts render
-and validate it identically.
+Everything is **schema-driven**: define a field once, the UI renders and
+validates it from the schema.
 
 - **`types.ts`** — `FieldDef`, `GroupDef`, `SectionDef`, `Scorecard`, etc.
 - **`schema.ts`** — the entire form: 3 sections → groups → fields, with
@@ -87,9 +85,9 @@ and validate it identically.
   adhesion tests with 3 photos each).
 - **`ReadinessMeter.tsx`** — the signature gauge · **`ScorecardPanel.tsx`** ·
   **`ChecklistPanel.tsx`** (auto media check with jump-back).
-- **`chrome.tsx`** — header, concept switcher, RoofBar, `GroupScopeBadge`
+- **`chrome.tsx`** — header, RoofBar, `GroupScopeBadge`
   (Shared vs Roof-only) · **`RoofFab.tsx`** — floating add/switch-roof control.
-- **`jump.tsx`** — checklist → field jump-back (per-concept implementations).
+- **`jump.tsx`** — checklist → field jump-back (scroll-to + flash).
 
 ## Multi-roof model
 
@@ -101,10 +99,9 @@ scorecard; the scorecard panel shows a per-roof + aggregate summary. Groups are
 badged **"Shared · all roofs"** or **"Roof X only"** when 2+ roofs exist. A
 floating roof control (`RoofFab.tsx`) lets you add/switch roofs after the top bar
 scrolls away — it appears **only on roof-specific content** and hides on shared
-groups (warranty, job details, sign-off), driven by `roofscope.tsx` (each concept
-computes "is the current view roof-relevant": wizard = current step's group,
-scroll = the group in view via IntersectionObserver, dashboard = a roof-relevant
-section is open).
+groups (warranty, job details, sign-off), driven by `roofscope.tsx` (the page
+tracks the group in view via IntersectionObserver to decide "is the current view
+roof-relevant").
 
 ## What's implemented (matches the brief's full field list)
 

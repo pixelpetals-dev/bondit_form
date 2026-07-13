@@ -1,7 +1,7 @@
 "use client";
 
 // Form state: shared project answers + per-roof answers, with localStorage
-// auto-save and a reference number. One store powers all three concepts.
+// auto-save and a reference number.
 
 import {
   createContext,

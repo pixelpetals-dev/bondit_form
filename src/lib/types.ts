@@ -1,4 +1,4 @@
-// Shared form-engine types. Defined once; all three concepts render from these.
+// Shared form-engine types the whole UI renders from.
 
 export type Answers = Record<string, unknown>;
 

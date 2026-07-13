@@ -1,15 +1,13 @@
 "use client";
 
-// Shared chrome: brand header (logo + reference), roof switcher, and the
-// concept navigation used across all three variations.
+// Shared chrome: brand header (logo + reference) and the roof switcher.
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { overallProgress, isSharedGroup } from "@/lib/engine";
 import type { GroupDef } from "@/lib/types";
-import { Plus, Trash, ChevronDown } from "./icons";
+import { Plus, Trash } from "./icons";
 
 export function BrandLogo({ className = "h-6" }: { className?: string }) {
   return (
@@ -25,34 +23,6 @@ export function BrandLogo({ className = "h-6" }: { className?: string }) {
   );
 }
 
-const CONCEPTS = [
-  { href: "/wizard", label: "Concept 1" },
-  { href: "/scroll", label: "Concept 2" },
-  { href: "/dashboard", label: "Concept 3" },
-];
-
-export function ConceptNav() {
-  const pathname = usePathname();
-  return (
-    <nav aria-label="Design concept" className="flex items-center gap-1 rounded-full border border-line bg-mist p-1">
-      {CONCEPTS.map((c) => {
-        const active = pathname === c.href;
-        return (
-          <Link
-            key={c.href}
-            href={c.href}
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-              active ? "bg-ink text-white shadow-sm" : "text-ink-soft hover:bg-mist-deep"
-            }`}
-          >
-            {c.label}
-          </Link>
-        );
-      })}
-    </nav>
-  );
-}
-
 export function BrandHeader() {
   const { ref } = useStore();
   return (
@@ -64,10 +34,7 @@ export function BrandHeader() {
             Pre-Coating Inspection
           </span>
         </Link>
-        <div className="flex items-center gap-3">
-          <span className="readout hidden text-[11px] text-ink-faint md:inline">{ref}</span>
-          <ConceptNav />
-        </div>
+        <span className="readout text-[11px] text-ink-faint">{ref}</span>
       </div>
     </header>
   );
@@ -134,11 +101,6 @@ export function SectionHead({ index, title, blurb }: { index: number; title: str
       <div className="swoosh-rule mt-3 w-24" />
     </div>
   );
-}
-
-/** Chevron affordance shared by the dashboard accordion. */
-export function AccordionChevron({ open }: { open: boolean }) {
-  return <ChevronDown className={`h-5 w-5 transition-transform ${open ? "rotate-180" : ""}`} />;
 }
 
 /**

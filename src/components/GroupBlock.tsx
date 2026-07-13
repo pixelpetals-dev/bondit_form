@@ -1,7 +1,7 @@
 "use client";
 
 // Renders one group's body. Two groups are special (a checklist and the
-// scorecard); everything else is a field grid. Shared by all concepts.
+// scorecard); everything else is a field grid.
 
 import type { GroupDef } from "@/lib/types";
 import { FieldGrid } from "./FieldRenderer";

@@ -1,8 +1,7 @@
 "use client";
 
-// Lets the photo/document checklist jump back to a missing field. Each concept
-// provides its own jump (scroll-to / open-section / go-to-step); the checklist
-// just calls jump(fieldId).
+// Lets the photo/document checklist jump back to a missing field. The page
+// provides the jump (scroll-to + flash); the checklist just calls jump(fieldId).
 
 import { createContext, useContext, type ReactNode } from "react";
 

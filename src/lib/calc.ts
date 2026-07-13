@@ -1,6 +1,5 @@
 // The calculation engine — gallons, parapet area, SMACNA gutter check, and the
-// weighted /50 scorecard. Pure functions over an answers object; identical for
-// all three concepts.
+// weighted /50 scorecard. Pure functions over an answers object.
 
 import type { Answers, Scorecard, ReadinessBand } from "./types";
 import {

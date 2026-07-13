@@ -1,5 +1,5 @@
-// Visibility + completion helpers shared by all concepts. Derived purely from
-// the schema and current answers so the wizard, scroll, and dashboard agree.
+// Visibility + completion helpers, derived purely from the schema and current
+// answers.
 
 import { SCHEMA } from "./schema";
 import type { Answers, FieldDef, GroupDef, SectionDef } from "./types";

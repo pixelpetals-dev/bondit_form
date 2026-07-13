@@ -4,12 +4,12 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { BrandLogo } from "@/components/chrome";
 
-// No marketing landing — forward straight to the form (Concept 1). Client-side
+// No marketing landing — forward straight to the form. Client-side
 // so it works in a static export (no server to run a redirect()).
 export default function Home() {
   const router = useRouter();
   useEffect(() => {
-    router.replace("/wizard");
+    router.replace("/scroll");
   }, [router]);
 
   return (

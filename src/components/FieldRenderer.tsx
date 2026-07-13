@@ -1,7 +1,7 @@
 "use client";
 
-// Maps a schema field to the right control and wires it to the store. Every
-// concept renders fields through this, so behaviour is identical everywhere.
+// Maps a schema field to the right control and wires it to the store. All
+// fields render through this, so behaviour is identical everywhere.
 
 import type { FieldDef, GroupDef } from "@/lib/types";
 import { useStore } from "@/lib/store";
