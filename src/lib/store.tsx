@@ -96,6 +96,8 @@ interface StoreValue {
   activeRoofId: string;
   /** Merged view (shared + active roof) for showIf / compute / rendering. */
   answers: Answers;
+  /** Project-level answers only — merge with any roof for cross-roof validation. */
+  sharedAnswers: Answers;
   scorecard: Scorecard;
   set: (id: string, value: unknown) => void;
   get: (id: string) => unknown;
@@ -160,6 +162,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       activeRoof,
       activeRoofId: state.activeRoofId,
       answers,
+      sharedAnswers: state.shared,
       scorecard: scorecard(answers),
       set: (id, v) => dispatch({ type: "set", id, value: v }),
       get: (id) => answers[id],

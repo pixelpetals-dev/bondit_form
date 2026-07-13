@@ -5,8 +5,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useStore } from "@/lib/store";
-import { overallProgress, isSharedGroup } from "@/lib/engine";
-import type { GroupDef } from "@/lib/types";
+import { sectionsCompleted } from "@/lib/engine";
 import { Plus, Trash } from "./icons";
 
 export function BrandLogo({ className = "h-6" }: { className?: string }) {
@@ -42,7 +41,7 @@ export function BrandHeader() {
 
 export function RoofBar() {
   const { roofs, activeRoofId, setActiveRoof, addRoof, removeRoof, answers } = useStore();
-  const p = overallProgress(answers);
+  const sections = sectionsCompleted(answers);
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="flex flex-wrap items-center gap-1.5">
@@ -82,7 +81,9 @@ export function RoofBar() {
           <Plus className="h-4 w-4" /> Roof
         </button>
       </div>
-      <span className="readout text-xs text-ink-faint">{p.pct}% complete</span>
+      <span className="readout text-xs text-ink-faint">
+        {sections.done} of {sections.total} sections complete
+      </span>
     </div>
   );
 }
@@ -103,22 +104,13 @@ export function SectionHead({ index, title, blurb }: { index: number; title: str
   );
 }
 
-/**
- * Shows whether a group is filled once for the whole property or per roof.
- * Only appears once a second roof exists, so single-roof jobs stay clean.
- */
-export function GroupScopeBadge({ group }: { group: GroupDef }) {
+/** Small chip naming the roof profile currently being filled (2+ roofs only). */
+export function ActiveRoofChip() {
   const { roofs, activeRoof } = useStore();
   if (roofs.length <= 1) return null;
-  if (group.id === "checklist" || group.id === "scorecard") return null;
-  const shared = isSharedGroup(group);
   return (
-    <span
-      className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
-        shared ? "bg-mist-deep text-ink-soft" : "bg-bond/10 text-bond-deep"
-      }`}
-    >
-      {shared ? "Shared · all roofs" : `${activeRoof.name} only`}
+    <span className="inline-flex w-fit items-center gap-1 rounded-full bg-bond/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-bond-deep">
+      Filling: {activeRoof.name}
     </span>
   );
 }

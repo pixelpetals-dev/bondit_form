@@ -12,6 +12,8 @@ export type FieldType =
   | "number"
   | "select"
   | "multiselect"
+  | "textlist" // repeatable free-text entries (e.g. batch numbers)
+  | "matchtext" // free text matched against hidden preset options
   | "toggle" // Yes / No
   | "photo" // single image
   | "photos" // multiple images
@@ -54,6 +56,8 @@ export interface FieldDef {
   body?: string;
   /** Marks a photo/video/file field whose absence blocks the checklist. */
   captureRequired?: boolean;
+  /** For type "signature": field id whose value is the signee's name. */
+  sourceId?: string;
 }
 
 export interface GroupDef {

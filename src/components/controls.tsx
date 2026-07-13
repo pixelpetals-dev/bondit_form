@@ -228,6 +228,105 @@ export function MultiSelectControl({
   );
 }
 
+/** Repeatable single-line entries — e.g. one batch number per pail/roll. */
+export function TextListControl({
+  field,
+  value,
+  onChange,
+}: {
+  field: FieldDef;
+  value: unknown;
+  onChange: (v: string[]) => void;
+}) {
+  // Tolerate a legacy single-string value from older saved sessions.
+  const items = Array.isArray(value) ? (value as string[]) : typeof value === "string" && value !== "" ? [value] : [""];
+  const setItem = (i: number, v: string) => onChange(items.map((s, j) => (j === i ? v : s)));
+  const remove = (i: number) => onChange(items.filter((_, j) => j !== i));
+  return (
+    <div className="flex flex-col gap-2">
+      {items.map((s, i) => (
+        <div key={i} className="flex items-stretch gap-1.5">
+          <input
+            type="text"
+            value={s}
+            onChange={(e) => setItem(i, e.target.value)}
+            placeholder={field.placeholder}
+            className={`${inputBase} h-12 flex-1`}
+          />
+          {items.length > 1 ? (
+            <button
+              type="button"
+              aria-label={`Remove entry ${i + 1}`}
+              onClick={() => remove(i)}
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-line bg-mist text-ink-soft hover:text-notready active:scale-95"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          ) : null}
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={() => onChange([...items, ""])}
+        className="inline-flex min-h-9 w-fit items-center gap-1.5 rounded-lg border border-dashed border-line-strong px-2.5 text-xs font-semibold text-bond-deep hover:border-bond hover:bg-bond/[0.04]"
+      >
+        <Plus className="h-3.5 w-3.5" /> Add another
+      </button>
+    </div>
+  );
+}
+
+/**
+ * Free-text input silently matched against preset options — the presets are
+ * never listed, so a customer only ever sees the term they were offered.
+ * Digits-only input snaps to the matching option on blur ("10" → "10-year").
+ */
+export function MatchTextControl({
+  field,
+  value,
+  onChange,
+}: {
+  field: FieldDef;
+  value: unknown;
+  onChange: (v: string) => void;
+}) {
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const findMatch = (input: string): string | null => {
+    const n = norm(input);
+    if (!n) return null;
+    for (const o of field.options ?? []) {
+      if (norm(o) === n) return o;
+      const digits = o.replace(/\D/g, "");
+      if (digits && n === digits) return o;
+    }
+    return null;
+  };
+  const text = (value as string) ?? "";
+  const matched = findMatch(text) === text && text !== "";
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="relative">
+        <input
+          type="text"
+          value={text}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={() => {
+            const m = findMatch(text);
+            if (m && m !== text) onChange(m);
+          }}
+          placeholder={field.placeholder}
+          className={`${inputBase} h-12 ${matched ? "pr-10" : ""}`}
+        />
+        {matched ? (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-ready" aria-label="Recognised term">
+            <Check className="h-4 w-4" />
+          </span>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export function ToggleControl({
   value,
   onChange,

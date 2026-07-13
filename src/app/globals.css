@@ -115,6 +115,15 @@ body {
   }
 }
 
+/* Missing required field — flagged after a blocked submit --- */
+.field-missing {
+  box-shadow: 0 0 0 2px var(--color-notready);
+  background: var(--color-notready-tint);
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+  margin: -0.5rem;
+}
+
 /* Accessible focus ring throughout -------------------------- */
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
   outline: 3px solid var(--color-bond);

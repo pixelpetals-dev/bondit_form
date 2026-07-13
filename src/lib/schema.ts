@@ -7,7 +7,6 @@ import {
   isMetal,
   isCoating,
   hasInsulation,
-  humidityHigh,
   yes,
   num,
   requiredAdhesionTests,
@@ -16,14 +15,15 @@ import {
 import { gallons, parapetSf, gutterCheck } from "./calc";
 
 const WEATHER = ["Sunny", "Cloudy", "Light rain", "Heavy rain", "Fog"];
-// Placeholder catalogue — replace with the Bond It product list / feed.
+// Product list per client (2026-07-13) — extend as the catalogue grows.
 const PRODUCTS = [
-  "Bond It Silicone Roof Coating",
-  "Bond It High-Solids Silicone",
-  "Bond It Roof Primer / Basecoat",
+  "Roof Seal: Oxime Silicone",
+  "Asphalt Bleed Blocker",
   "Other",
 ];
-const WARRANTY_TIER = ["10-year", "15-year", "20-year", "Other"];
+// Warranty presets are matched against typed input but never listed — a
+// customer only ever sees the term they were offered (client request).
+const WARRANTY_TIER = ["10-year", "15-year", "20-year"];
 const BUILDING = ["Warehouse", "Retail", "Office", "Industrial", "Other"];
 const ROOF_SYSTEM = ["Modified Bitumen", "Metal", "Single Ply", "Built-up", "Coating", "Other"];
 const DECK = ["Metal", "Wood", "Concrete", "Other"];
@@ -54,10 +54,20 @@ export const SCHEMA: SectionDef[] = [
         title: "Warranty & product",
         note: "Links this inspection to the Bond It product and warranty it supports.",
         fields: [
-          { id: "productName", label: "Bond It product", type: "select", options: PRODUCTS, required: true, shared: true, span: 2, help: "Sample list — to be replaced with the Bond It catalogue." },
-          { id: "productSku", label: "Product SKU", type: "text", required: true, shared: true, span: 1, help: "As printed on the packaging." },
-          { id: "batchNumber", label: "Batch / lot number", type: "text", required: true, shared: true, span: 1, help: "As printed on the packaging." },
-          { id: "warrantyTier", label: "Warranty tier / duration", type: "select", options: WARRANTY_TIER, required: true, shared: true, span: 2 },
+          { id: "productName", label: "Product(s) used", type: "multiselect", options: PRODUCTS, required: true, shared: true, span: 2, help: "Select every product used on this job." },
+          { id: "batchNumber", label: "Batch / lot numbers", type: "textlist", required: true, shared: true, span: 2, placeholder: "As printed on the packaging", help: "Add one per pail / roll — jobs often use several." },
+          { id: "warrantyTier", label: "Warranty term", type: "matchtext", options: WARRANTY_TIER, required: true, shared: true, span: 2, placeholder: "e.g. 10-year", help: "Type the term offered to the customer." },
+        ],
+      },
+      {
+        id: "applicator",
+        title: "Applicator details",
+        note: "The person applying the product and completing this form.",
+        fields: [
+          { id: "applicatorName", label: "Applicator name", type: "text", required: true, shared: true, span: 1 },
+          { id: "applicatorCompany", label: "Applicator company", type: "text", required: true, shared: true, span: 1 },
+          { id: "applicatorPhone", label: "Applicator phone", type: "tel", required: true, shared: true, span: 1 },
+          { id: "applicatorEmail", label: "Applicator email", type: "email", required: true, shared: true, span: 1 },
         ],
       },
       {
@@ -68,14 +78,6 @@ export const SCHEMA: SectionDef[] = [
           { id: "inspectionDate", label: "Date of inspection", type: "date", required: true, shared: true, help: "Cannot be a future date." },
           { id: "startTime", label: "Inspection start time", type: "time", required: true, shared: true },
           { id: "temperature", label: "Temperature", type: "number", unit: "°F", min: 0, max: 140, required: true, shared: true, span: 1 },
-          { id: "wind", label: "Wind speed", type: "number", unit: "mph", min: 0, max: 150, required: true, shared: true, span: 1 },
-          { id: "humidity", label: "Relative humidity", type: "number", unit: "%", min: 0, max: 100, required: true, shared: true, span: 1, help: "Warns above 85% — silicone cure risk." },
-          { id: "dewPoint", label: "Dew point", type: "number", unit: "°F", required: true, shared: true, span: 1 },
-          {
-            id: "humidityWarn", label: "", type: "note", shared: true,
-            showIf: (a) => humidityHigh(a),
-            body: "⚠ High humidity (>85%). Silicone may not cure properly — confirm conditions are acceptable before proceeding.",
-          },
           { id: "conditions", label: "Weather conditions", type: "multiselect", options: WEATHER, required: true, shared: true, span: 2 },
           { id: "weatherNotes", label: "Weather notes", type: "textarea", shared: true, span: 2, placeholder: "Optional — anything unusual about site conditions." },
           { id: "projectName", label: "Project name", type: "text", required: true, shared: true, span: 2 },
@@ -193,6 +195,19 @@ export const SCHEMA: SectionDef[] = [
           { id: "repairPhotos", label: "Repair area photos", type: "photos", captureRequired: true, span: 2, showIf: (a) => yes(a, "repairsNeeded"), help: "One per repair area." },
         ],
       },
+      // Cleanliness folds in right after condition problems (client request) —
+      // prep contamination reads as part of "condition after repairs needed".
+      {
+        id: "cleanliness",
+        title: "Cleanliness & surface prep",
+        fields: [
+          { id: "vegetation", label: "Vegetation / sediment / grime present?", type: "toggle", required: true, span: 2 },
+          { id: "vegetationSf", label: "Area with vegetation", type: "number", unit: "SF", span: 1, showIf: (a) => yes(a, "vegetation") },
+          { id: "heavyDirt", label: "Heavy dirt / algae / mildew?", type: "toggle", span: 1, showIf: (a) => yes(a, "vegetation"), help: "Requiring biocide affects the score." },
+          { id: "cleanDesc", label: "Description", type: "textarea", span: 2, showIf: (a) => yes(a, "vegetation"), placeholder: "Optional — describe the contamination." },
+          { id: "cleanPhotos", label: "Affected-area photos", type: "photos", captureRequired: true, span: 2, showIf: (a) => yes(a, "vegetation") },
+        ],
+      },
       {
         id: "coating",
         title: "Existing coating",
@@ -282,17 +297,6 @@ export const SCHEMA: SectionDef[] = [
           { id: "scupperDamaged", label: "Any scuppers damaged?", type: "toggle", span: 1, showIf: (a) => yes(a, "scuppers") },
           { id: "scupperCoatable", label: "Scuppers coatable?", type: "toggle", span: 1, showIf: (a) => yes(a, "scuppers") },
           { id: "scupperPhotos", label: "Scupper photos", type: "photos", captureRequired: true, span: 2, showIf: (a) => yes(a, "scuppers"), help: "One per scupper." },
-        ],
-      },
-      {
-        id: "cleanliness",
-        title: "Cleanliness & surface prep",
-        fields: [
-          { id: "vegetation", label: "Vegetation / sediment / grime present?", type: "toggle", required: true, span: 2 },
-          { id: "vegetationSf", label: "Area with vegetation", type: "number", unit: "SF", span: 1, showIf: (a) => yes(a, "vegetation") },
-          { id: "heavyDirt", label: "Heavy dirt / algae / mildew?", type: "toggle", span: 1, showIf: (a) => yes(a, "vegetation"), help: "Requiring biocide affects the score." },
-          { id: "cleanDesc", label: "Description", type: "textarea", span: 2, showIf: (a) => yes(a, "vegetation"), placeholder: "Optional — describe the contamination." },
-          { id: "cleanPhotos", label: "Affected-area photos", type: "photos", captureRequired: true, span: 2, showIf: (a) => yes(a, "vegetation") },
         ],
       },
       {
@@ -404,15 +408,12 @@ export const SCHEMA: SectionDef[] = [
       {
         id: "signatures",
         title: "Sign-off",
-        note: "Signed once for the whole inspection. Captured on screen and embedded in the PDF with a timestamp.",
+        note: "Signed once for the whole inspection. Names auto-fill from Section 1 — each person just signs.",
         fields: [
           { id: "finalComments", label: "Final comments", type: "textarea", shared: true, span: 2, placeholder: "Evaluator notes on overall findings." },
-          { id: "sigEvaluatorName", label: "Evaluator name", type: "text", required: true, shared: true, span: 1 },
-          { id: "sigEvaluator", label: "Evaluator signature", type: "signature", required: true, shared: true, span: 1 },
-          { id: "sigContractorName", label: "Contractor name", type: "text", required: true, shared: true, span: 1 },
-          { id: "sigContractor", label: "Contractor signature", type: "signature", required: true, shared: true, span: 1 },
-          { id: "sigOwnerName", label: "Property owner name", type: "text", required: true, shared: true, span: 1 },
-          { id: "sigOwner", label: "Owner signature", type: "signature", required: true, shared: true, span: 1 },
+          { id: "sigEvaluator", label: "Evaluator signature", type: "signature", sourceId: "evaluatorName", required: true, shared: true, span: 2 },
+          { id: "sigContractor", label: "Contractor / applicator signature", type: "signature", sourceId: "applicatorName", required: true, shared: true, span: 2 },
+          { id: "sigOwner", label: "Property owner signature", type: "signature", sourceId: "ownerName", required: true, shared: true, span: 2 },
         ],
       },
     ],

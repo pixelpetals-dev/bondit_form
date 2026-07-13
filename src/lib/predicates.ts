@@ -18,8 +18,6 @@ export const isCoating = (a: Answers): boolean =>
   a.existingRoofSystem === "Coating";
 export const hasInsulation = (a: Answers): boolean => yes(a, "insulation");
 
-export const humidityHigh = (a: Answers): boolean => num(a, "humidity") > 85;
-
 /** One captured photo (name + kind); mirrors uploads.Attachment. */
 export interface RowPhoto {
   name: string;

@@ -47,6 +47,9 @@ export function isFilled(f: FieldDef, value: unknown): boolean {
     return Array.isArray(value) && value.length > 0;
   }
   if (f.type === "multiselect") return Array.isArray(value) && value.length > 0;
+  if (f.type === "textlist") {
+    return Array.isArray(value) && value.some((v) => typeof v === "string" && v.trim() !== "");
+  }
   if (value === undefined || value === null) return false;
   if (typeof value === "string") return value.trim() !== "";
   return true;
@@ -68,6 +71,35 @@ export function sectionProgress(s: SectionDef, a: Answers) {
     },
     { done: 0, total: 0 },
   );
+}
+
+/** How many of the 3 sections are fully complete — powers the section-based ticker. */
+export function sectionsCompleted(a: Answers) {
+  const done = SCHEMA.filter((s) => {
+    const p = sectionProgress(s, a);
+    return p.total > 0 && p.done === p.total;
+  }).length;
+  return { done, total: SCHEMA.length };
+}
+
+/** Required (or capture-required) visible fields still missing — powers submit gating. */
+export interface MissingField {
+  section: SectionDef;
+  group: GroupDef;
+  field: FieldDef;
+}
+export function missingRequired(a: Answers): MissingField[] {
+  const out: MissingField[] = [];
+  for (const s of SCHEMA) {
+    for (const g of visibleGroups(s, a)) {
+      for (const f of visibleFields(g, a)) {
+        if ((f.required || f.captureRequired) && !isFilled(f, a[f.id])) {
+          out.push({ section: s, group: g, field: f });
+        }
+      }
+    }
+  }
+  return out;
 }
 
 export function overallProgress(a: Answers) {

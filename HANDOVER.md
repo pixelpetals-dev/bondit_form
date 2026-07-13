@@ -19,9 +19,19 @@ client brief — into **3 sections**.
 **Current phase:** the prototype originally presented **three UX concepts** over
 one shared form engine. Bond It picked **Concept 2 — Document Scroll** (client
 feedback 2026-07-13, see `../client rep 1307.md`), so the repo now carries only
-that concept. Next up: fold in the client's refinement list (section-based
-progress ticker, per-section save, applicator details, etc. — see that same
-feedback file).
+that concept. The client's refinement list from that feedback is **implemented**
+(2026-07-13): section-based progress ("Section 1 of 3", bar advances per
+completed section), sub-section rail with jump-to-group, active-roof chip
+(replaces the Shared/Roof-only badges), product multiselect (Roof Seal: Oxime
+Silicone, Asphalt Bleed Blocker), multiple batch numbers, type-to-match warranty
+term (presets hidden — "10" snaps to "10-year" on blur), applicator
+name/company/phone/email, weather trimmed to temp + conditions + notes,
+Cleanliness folded in right after Condition problems, sign-off names auto-fill
+from Section 1 (people only sign), and **blocked incomplete submission** —
+Submit validates every required + capture-required field across all roofs,
+flags them red, and lists tap-to-jump chips (switching roofs when needed).
+Still open: the coating-equation fix (awaiting client detail on what's wrong)
+and the login-tied save (backend phase).
 
 ## Tech stack
 
